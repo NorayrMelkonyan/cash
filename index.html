@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Դրամարկղ - Dance Studio</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f6f9;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        h1 {
+            margin: 0;
+            color: #333;
+            letter-spacing: 2px;
+        }
+        .month-picker-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .month-picker-wrap label {
+            font-weight: bold;
+            color: #555;
+        }
+        .month-picker-wrap input[type="month"] {
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .nav-link {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .nav-link:hover { text-decoration: underline; }
+
+        /* Summary cards */
+        .summary-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .summary-card {
+            flex: 1;
+            min-width: 180px;
+            background: white;
+            border-radius: 8px;
+            padding: 18px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-left: 5px solid #ccc;
+        }
+        .summary-card .label {
+            font-size: 13px;
+            color: #777;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .summary-card .value {
+            font-size: 26px;
+            font-weight: bold;
+            margin-top: 6px;
+        }
+        .summary-card.income { border-left-color: #28a745; }
+        .summary-card.income .value { color: #28a745; }
+        .summary-card.expense { border-left-color: #dc3545; }
+        .summary-card.expense .value { color: #dc3545; }
+        .summary-card.balance { border-left-color: #007bff; }
+        .summary-card.balance .value { color: #007bff; }
+        .summary-card .subvalue {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        /* Layout */
+        .main-grid {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+        .panel {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .panel-groups {
+            flex: 1.3;
+            min-width: 320px;
+        }
+        .panel-side {
+            flex: 1;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .panel-header h3 { margin: 0; }
+
+        .btn {
+            padding: 9px 14px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+        }
+        .btn-income { background: #28a745; color: white; }
+        .btn-expense { background: #dc3545; color: white; }
+        .btn-delete-sm {
+            background: #eee;
+            color: #999;
+            border: none;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 11px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .btn-delete-sm:hover { background: #dc3545; color: white; }
+
+        /* Groups accordion */
+        .group-card {
+            border: 1px solid #eee;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        .group-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 14px;
+            cursor: pointer;
+            background: #f8f9fa;
+        }
+        .group-card-header:hover { background: #eef4ff; }
+        .group-card-name {
+            font-weight: bold;
+            color: #333;
+        }
+        .group-card-meta {
+            font-size: 12px;
+            color: #999;
+            font-weight: normal;
+        }
+        .group-card-total {
+            font-weight: bold;
+            color: #28a745;
+            white-space: nowrap;
+        }
+        .group-card-body {
+            display: none;
+            padding: 10px 14px;
+            border-top: 1px solid #eee;
+        }
+        .group-card-body.open { display: block; }
+        .group-child-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #f2f2f2;
+            font-size: 14px;
+        }
+        .group-child-row:last-child { border-bottom: none; }
+        .group-child-name { font-weight: bold; }
+        .group-child-date { color: #999; font-size: 12px; }
+        .group-child-amount { color: #28a745; font-weight: bold; }
+        .empty-note { color: #999; font-size: 13px; padding: 8px 0; }
+        .groups-grand-total {
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 2px solid #eee;
+            text-align: right;
+            font-weight: bold;
+            font-size: 16px;
+            color: #28a745;
+        }
+
+        /* Income / Expense lists */
+        .entry-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .entry-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 9px 0;
+            border-bottom: 1px solid #f2f2f2;
+            gap: 10px;
+        }
+        .entry-list li:last-child { border-bottom: none; }
+        .entry-main { flex: 1; min-width: 0; }
+        .entry-desc {
+            font-weight: bold;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .entry-date { font-size: 11px; color: #999; }
+        .entry-amount {
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        .entry-amount.income-amt { color: #28a745; }
+        .entry-amount.expense-amt { color: #dc3545; }
+        .entry-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .panel-total {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 2px solid #eee;
+            text-align: right;
+            font-weight: bold;
+        }
+        .panel-total.income-total { color: #28a745; }
+        .panel-total.expense-total { color: #dc3545; }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 420px;
+            position: relative;
+        }
+        .close-modal {
+            position: absolute;
+            top: 10px; right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>💰 Դրամարկղ</h1>
+    <div class="month-picker-wrap">
+        <label for="monthPicker">Ամիս</label>
+        <input type="month" id="monthPicker">
+    </div>
+    <a class="nav-link" href="https://norayrmelkonyan.github.io/GoharikDance/">← Ադմին Վահանակ</a>
+</header>
+
+<div class="summary-row">
+    <div class="summary-card income">
+        <div class="label">Ընդհանուր Մուտք</div>
+        <div class="value" id="totalIncomeValue">0 ֏</div>
+        <div class="subvalue" id="totalIncomeSub"></div>
+    </div>
+    <div class="summary-card expense">
+        <div class="label">Ընդհանուր Ելք</div>
+        <div class="value" id="totalExpenseValue">0 ֏</div>
+    </div>
+    <div class="summary-card balance">
+        <div class="label">Մնացորդ (Ընտրված Ամիս)</div>
+        <div class="value" id="balanceValue">0 ֏</div>
+    </div>
+    <div class="summary-card balance" style="border-left-color:#6f42c1;">
+        <div class="label">Ընդհանուր Մնացորդ Սկզբից</div>
+        <div class="value" id="cumulativeBalanceValue" style="color:#6f42c1;">0 ֏</div>
+    </div>
+</div>
+
+<div class="main-grid">
+    <div class="panel panel-groups">
+        <div class="panel-header">
+            <h3>Խմբերի Եկամուտ</h3>
+        </div>
+        <div id="groupsList"></div>
+        <div class="groups-grand-total" id="groupsGrandTotal"></div>
+    </div>
+
+    <div class="panel-side">
+        <div class="panel">
+            <div class="panel-header">
+                <h3>➕ Այլ Եկամուտ</h3>
+                <button class="btn btn-income" id="openIncomeModalBtn">+ Ավելացնել</button>
+            </div>
+            <ul class="entry-list" id="otherIncomeList"></ul>
+            <div class="panel-total income-total" id="otherIncomeTotal"></div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">
+                <h3>➖ Ելքեր</h3>
+                <button class="btn btn-expense" id="openExpenseModalBtn">+ Ավելացնել</button>
+            </div>
+            <ul class="entry-list" id="expenseList"></ul>
+            <div class="panel-total expense-total" id="expenseTotal"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Other Income Modal -->
+<div class="modal hidden" id="incomeModal">
+    <div class="modal-content">
+        <span class="close-modal" id="closeIncomeModalBtn">&times;</span>
+        <h3>➕ Ավելացնել Եկամուտ</h3>
+        <div class="form-group">
+            <label>Գումար (֏) *</label>
+            <input type="number" id="incomeAmount" min="0" step="100" placeholder="Օր. 20000">
+        </div>
+        <div class="form-group">
+            <label>Նկարագրություն / Որտեղից *</label>
+            <input type="text" id="incomeDesc" placeholder="Օր. Վարձակալություն, Իրերի վաճառք...">
+        </div>
+        <button class="btn btn-income" id="saveIncomeBtn" style="width:100%;">Պահպանել</button>
+    </div>
+</div>
+
+<!-- Expense Modal -->
+<div class="modal hidden" id="expenseModal">
+    <div class="modal-content">
+        <span class="close-modal" id="closeExpenseModalBtn">&times;</span>
+        <h3>➖ Ավելացնել Ելք</h3>
+        <div class="form-group">
+            <label>Գումար (֏) *</label>
+            <input type="number" id="expenseAmount" min="0" step="100" placeholder="Օր. 15000">
+        </div>
+        <div class="form-group">
+            <label>Ծախսի Անվանում *</label>
+            <input type="text" id="expenseName" placeholder="Օր. Վարձավճար, Կահույք, Աշխատավարձ...">
+        </div>
+        <button class="btn btn-expense" id="saveExpenseBtn" style="width:100%;">Պահպանել</button>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyC6O59wtedoLbeUCF5mF4Dkz4a2u-OK8Aw",
+        authDomain: "goharik-dance.firebaseapp.com",
+        projectId: "goharik-dance",
+        storageBucket: "goharik-dance.firebasestorage.app",
+        messagingSenderId: "996113060132",
+        appId: "1:996113060132:web:d05d0610e4ba58ad50a3b1",
+        measurementId: "G-JJPYZBPQTT"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let allStudents = [];
+    let groupsCache = [];
+    let otherIncomeCache = [];
+    let expenseCache = [];
+    let openGroupIds = new Set();
+
+    const monthPicker = document.getElementById('monthPicker');
+    const groupsList = document.getElementById('groupsList');
+    const groupsGrandTotal = document.getElementById('groupsGrandTotal');
+    const otherIncomeList = document.getElementById('otherIncomeList');
+    const otherIncomeTotalEl = document.getElementById('otherIncomeTotal');
+    const expenseList = document.getElementById('expenseList');
+    const expenseTotalEl = document.getElementById('expenseTotal');
+    const totalIncomeValue = document.getElementById('totalIncomeValue');
+    const totalIncomeSub = document.getElementById('totalIncomeSub');
+    const totalExpenseValue = document.getElementById('totalExpenseValue');
+    const balanceValue = document.getElementById('balanceValue');
+    const cumulativeBalanceValue = document.getElementById('cumulativeBalanceValue');
+
+    const incomeModal = document.getElementById('incomeModal');
+    const expenseModal = document.getElementById('expenseModal');
+
+    // Default month = ընթացիկ ամիս (yyyy-mm)
+    function currentMonthKey() {
+        const now = new Date();
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    }
+    monthPicker.value = currentMonthKey();
+
+    function fmt(n) {
+        return `${Number(n || 0).toLocaleString('hy-AM')} ֏`;
+    }
+
+    function getMonthKeyFromDateStr(dateStr) {
+        if (!dateStr) return null;
+        const parts = dateStr.trim().split('.');
+        if (parts.length !== 3) return null;
+        const [d, m, y] = parts;
+        if (!y || !m) return null;
+        return `${y}-${m.padStart(2, '0')}`;
+    }
+
+    // --- Բեռնում Firestore-ից ---
+    async function loadGroups() {
+        const snap = await getDocs(collection(db, "groups"));
+        groupsCache = [];
+        snap.forEach(d => groupsCache.push({ id: d.id, ...d.data() }));
+        groupsCache.sort((a, b) => (a.label || '').localeCompare(b.label || '', 'hy'));
+    }
+
+    async function loadStudents() {
+        const snap = await getDocs(collection(db, "registrations"));
+        allStudents = [];
+        snap.forEach(d => allStudents.push({ id: d.id, ...d.data() }));
+    }
+
+    async function loadOtherIncome() {
+        const snap = await getDocs(collection(db, "otherIncome"));
+        otherIncomeCache = [];
+        snap.forEach(d => otherIncomeCache.push({ id: d.id, ...d.data() }));
+    }
+
+    async function loadExpenses() {
+        const snap = await getDocs(collection(db, "expenses"));
+        expenseCache = [];
+        snap.forEach(d => expenseCache.push({ id: d.id, ...d.data() }));
+    }
+
+    // --- Հաշվարկներ ---
+    function getGroupPaymentsForMonth(groupId, monthKey) {
+        const entries = [];
+        allStudents.forEach(student => {
+            if (student.groupId !== groupId) return;
+            const payments = student.payments || [];
+            payments.forEach(dateStr => {
+                if (getMonthKeyFromDateStr(dateStr) === monthKey) {
+                    entries.push({
+                        name: `${student.childName || ''} ${student.childSurname || ''}`.trim(),
+                        date: dateStr
+                    });
+                }
+            });
+        });
+        entries.sort((a, b) => a.name.localeCompare(b.name, 'hy'));
+        return entries;
+    }
+
+    function renderGroups() {
+        const monthKey = monthPicker.value;
+        groupsList.innerHTML = '';
+
+        if (groupsCache.length === 0) {
+            groupsList.innerHTML = "<div class='empty-note'>Խմբեր դեռ չկան</div>";
+            groupsGrandTotal.textContent = '';
+            return 0;
+        }
+
+        let grandTotal = 0;
+
+        groupsCache.forEach(g => {
+            const price = Number(g.price) || 0;
+            const payments = getGroupPaymentsForMonth(g.id, monthKey);
+            const groupTotal = price * payments.length;
+            grandTotal += groupTotal;
+
+            const card = document.createElement('div');
+            card.className = 'group-card';
+
+            const header = document.createElement('div');
+            header.className = 'group-card-header';
+            header.innerHTML = `
+                <span class="group-card-name">${g.label} <span class="group-card-meta">(${payments.length} վճարում${price ? ' × ' + fmt(price) : ''})</span></span>
+                <span class="group-card-total">${fmt(groupTotal)}</span>
+            `;
+
+            const body = document.createElement('div');
+            body.className = 'group-card-body' + (openGroupIds.has(g.id) ? ' open' : '');
+
+            if (payments.length === 0) {
+                body.innerHTML = "<div class='empty-note'>Այս ամսում վճարումներ չկան այս խմբում</div>";
+            } else {
+                payments.forEach(p => {
+                    const row = document.createElement('div');
+                    row.className = 'group-child-row';
+                    row.innerHTML = `
+                        <span class="group-child-name">${p.name} <span class="group-child-date">${p.date}</span></span>
+                        <span class="group-child-amount">${price ? fmt(price) : '—'}</span>
+                    `;
+                    body.appendChild(row);
+                });
+            }
+
+            header.addEventListener('click', () => {
+                if (openGroupIds.has(g.id)) {
+                    openGroupIds.delete(g.id);
+                    body.classList.remove('open');
+                } else {
+                    openGroupIds.add(g.id);
+                    body.classList.add('open');
+                }
+            });
+
+            card.appendChild(header);
+            card.appendChild(body);
+            groupsList.appendChild(card);
+        });
+
+        groupsGrandTotal.textContent = `Խմբերի Ընդհանուր Եկամուտ՝ ${fmt(grandTotal)}`;
+        return grandTotal;
+    }
+
+    function renderOtherIncome() {
+        const monthKey = monthPicker.value;
+        const entries = otherIncomeCache
+            .filter(e => e.monthKey === monthKey)
+            .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+        otherIncomeList.innerHTML = '';
+        if (entries.length === 0) {
+            otherIncomeList.innerHTML = "<li class='empty-note' style='border:none;'>Այս ամսում այլ եկամուտ չկա</li>";
+        } else {
+            entries.forEach(e => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <div class="entry-main">
+                        <div class="entry-desc">${e.description || '—'}</div>
+                        <div class="entry-date">${e.dateLabel || ''}</div>
+                    </div>
+                    <div class="entry-right">
+                        <span class="entry-amount income-amt">+${fmt(e.amount)}</span>
+                        <button class="btn-delete-sm" data-id="${e.id}" title="Ջնջել">X</button>
+                    </div>
+                `;
+                li.querySelector('.btn-delete-sm').addEventListener('click', async () => {
+                    if (confirm('Ջնջե՞լ այս եկամուտի գրառումը:')) {
+                        await deleteDoc(doc(db, "otherIncome", e.id));
+                        await loadOtherIncome();
+                        renderAll();
+                    }
+                });
+                otherIncomeList.appendChild(li);
+            });
+        }
+
+        const total = entries.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+        otherIncomeTotalEl.textContent = `Ընդամենը՝ ${fmt(total)}`;
+        return total;
+    }
+
+    function renderExpenses() {
+        const monthKey = monthPicker.value;
+        const entries = expenseCache
+            .filter(e => e.monthKey === monthKey)
+            .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+        expenseList.innerHTML = '';
+        if (entries.length === 0) {
+            expenseList.innerHTML = "<li class='empty-note' style='border:none;'>Այս ամսում ելք չկա</li>";
+        } else {
+            entries.forEach(e => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <div class="entry-main">
+                        <div class="entry-desc">${e.name || '—'}</div>
+                        <div class="entry-date">${e.dateLabel || ''}</div>
+                    </div>
+                    <div class="entry-right">
+                        <span class="entry-amount expense-amt">-${fmt(e.amount)}</span>
+                        <button class="btn-delete-sm" data-id="${e.id}" title="Ջնջել">X</button>
+                    </div>
+                `;
+                li.querySelector('.btn-delete-sm').addEventListener('click', async () => {
+                    if (confirm('Ջնջե՞լ այս ելքի գրառումը:')) {
+                        await deleteDoc(doc(db, "expenses", e.id));
+                        await loadExpenses();
+                        renderAll();
+                    }
+                });
+                expenseList.appendChild(li);
+            });
+        }
+
+        const total = entries.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+        expenseTotalEl.textContent = `Ընդամենը՝ ${fmt(total)}`;
+        return total;
+    }
+
+    function computeCumulativeBalance() {
+        // Խմբերի բոլոր ժամանակների եկամուտ
+        let groupsAllTime = 0;
+        allStudents.forEach(student => {
+            const groupObj = groupsCache.find(g => g.id === student.groupId);
+            const price = groupObj ? (Number(groupObj.price) || 0) : 0;
+            const payments = student.payments || [];
+            groupsAllTime += price * payments.length;
+        });
+
+        const otherIncomeAllTime = otherIncomeCache.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+        const expensesAllTime = expenseCache.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+
+        return (groupsAllTime + otherIncomeAllTime) - expensesAllTime;
+    }
+
+    function renderAll() {
+        const groupsTotal = renderGroups();
+        const otherIncomeTotal = renderOtherIncome();
+        const expenseTotal = renderExpenses();
+
+        const totalIncome = groupsTotal + otherIncomeTotal;
+        const balance = totalIncome - expenseTotal;
+
+        totalIncomeValue.textContent = fmt(totalIncome);
+        totalIncomeSub.textContent = `Խմբեր՝ ${fmt(groupsTotal)} + Այլ՝ ${fmt(otherIncomeTotal)}`;
+        totalExpenseValue.textContent = fmt(expenseTotal);
+        balanceValue.textContent = fmt(balance);
+        balanceValue.style.color = balance < 0 ? '#dc3545' : '#007bff';
+
+        const cumulativeBalance = computeCumulativeBalance();
+        cumulativeBalanceValue.textContent = fmt(cumulativeBalance);
+        cumulativeBalanceValue.style.color = cumulativeBalance < 0 ? '#dc3545' : '#6f42c1';
+    }
+
+    monthPicker.addEventListener('change', renderAll);
+
+    // --- Այլ Եկամուտ մոդալ ---
+    document.getElementById('openIncomeModalBtn').addEventListener('click', () => {
+        document.getElementById('incomeAmount').value = '';
+        document.getElementById('incomeDesc').value = '';
+        incomeModal.classList.remove('hidden');
+    });
+    document.getElementById('closeIncomeModalBtn').addEventListener('click', () => incomeModal.classList.add('hidden'));
+
+    document.getElementById('saveIncomeBtn').addEventListener('click', async () => {
+        const amount = parseFloat(document.getElementById('incomeAmount').value);
+        const description = document.getElementById('incomeDesc').value.trim();
+        if (!amount || amount <= 0) { alert('Գրեք գումարը'); return; }
+        if (!description) { alert('Գրեք նկարագրությունը (որտեղից)'); return; }
+
+        const btn = document.getElementById('saveIncomeBtn');
+        btn.disabled = true;
+        try {
+            await addDoc(collection(db, "otherIncome"), {
+                amount,
+                description,
+                monthKey: monthPicker.value,
+                dateLabel: new Date().toLocaleDateString('hy-AM'),
+                createdAt: new Date()
+            });
+            incomeModal.classList.add('hidden');
+            await loadOtherIncome();
+            renderAll();
+        } catch (err) {
+            alert('Սխալ: ' + err.message);
+        } finally {
+            btn.disabled = false;
+        }
+    });
+
+    // --- Ելք մոդալ ---
+    document.getElementById('openExpenseModalBtn').addEventListener('click', () => {
+        document.getElementById('expenseAmount').value = '';
+        document.getElementById('expenseName').value = '';
+        expenseModal.classList.remove('hidden');
+    });
+    document.getElementById('closeExpenseModalBtn').addEventListener('click', () => expenseModal.classList.add('hidden'));
+
+    document.getElementById('saveExpenseBtn').addEventListener('click', async () => {
+        const amount = parseFloat(document.getElementById('expenseAmount').value);
+        const name = document.getElementById('expenseName').value.trim();
+        if (!amount || amount <= 0) { alert('Գրեք գումարը'); return; }
+        if (!name) { alert('Գրեք ծախսի անվանումը'); return; }
+
+        const btn = document.getElementById('saveExpenseBtn');
+        btn.disabled = true;
+        try {
+            await addDoc(collection(db, "expenses"), {
+                amount,
+                name,
+                monthKey: monthPicker.value,
+                dateLabel: new Date().toLocaleDateString('hy-AM'),
+                createdAt: new Date()
+            });
+            expenseModal.classList.add('hidden');
+            await loadExpenses();
+            renderAll();
+        } catch (err) {
+            alert('Սխալ: ' + err.message);
+        } finally {
+            btn.disabled = false;
+        }
+    });
+
+    // --- Սկզբնական բեռնում ---
+    async function init() {
+        await Promise.all([loadGroups(), loadStudents(), loadOtherIncome(), loadExpenses()]);
+        renderAll();
+    }
+    init();
+</script>
+</body>
+</html>
